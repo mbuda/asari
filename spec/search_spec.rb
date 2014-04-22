@@ -150,4 +150,27 @@ describe Asari do
       @asari.search filter: { and: Asari::Geography.coordinate_box(meters: 5000, lat: 45.52, lng: 122.6819) }
     end
   end
+
+  describe "searching with facets" do
+    it "builds a proper query string if one facet in array is passed" do
+      expected_url = "http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/" +
+        "search?q=&facet.genres={}&size=10"
+      HTTParty.should_receive(:get).with(expected_url)
+      @asari.search(facet: [:genres])
+    end
+
+    it "builds a proper query string if many facets in array is passed" do
+      expected_url = "http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/" +
+        "search?q=&facet.genres={}&facet.year={}&size=10"
+      HTTParty.should_receive(:get).with(expected_url)
+      @asari.search(facet: [:genres, :year])
+    end
+
+    it "builds a proper query string if one facet with options is passed" do
+      expected_url = "http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/" +
+        "search?q=&facet.genres={sort:'count',size:5}&size=10"
+      HTTParty.should_receive(:get).with(expected_url)
+      @asari.search(facet: { genres: { sort: "count", size: 5 } })
+    end
+  end
 end

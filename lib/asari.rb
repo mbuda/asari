@@ -73,6 +73,7 @@ class Asari
     url = "http://search-#{search_domain}.#{aws_region}.cloudsearch.amazonaws.com/#{api_version}/search"
     url += "?q=#{CGI.escape(term.to_s)}"
     url += "&bq=#{CGI.escape(bq)}" if options[:filter]
+    url << build_facets(options[:facet]) if options[:facet]
     url += "&size=#{page_size}"
     url += "&return=#{options[:return_fields].join(',')}" if options[:return_fields]
 
@@ -220,6 +221,43 @@ class Asari
     sort_param << :asc if sort_param.size < 2
     sort_field, sort_direction = *sort_param
     "&sort=#{ sort_field } #{ sort_direction }"
+  end
+
+
+  def build_facets(facet_options)
+    case facet_options
+      when Array then build_facets_from_array(facet_options)
+      when Hash then build_facets_from_hash(facet_options)
+    end
+  end
+
+  def build_facets_from_array(facets)
+    facets.inject("") do |facet_str, facet|
+      case facet
+        when String, Symbol
+          facet_str << "&facet.#{ facet }={}"
+      end
+    end
+  end
+
+  def build_facets_from_hash(facets)
+    facets.inject("") do |facet_str, facet_options|
+      facet_name = facet_options[0]
+      facet_value = facet_options[1]
+      facet_str << "&facet.#{ facet_name }=" << build_facet_credentials(facet_value)
+    end
+  end
+
+  def build_facet_credentials(facet_options)
+    "{".tap do |facet_str|
+      facet_str << facet_options.map do |option_name, option_value|
+        case option_value
+          when String then "#{ option_name}:'#{ option_value }'"
+          when Numeric then "#{ option_name}:#{ option_value }"
+        end
+      end.join(",")
+      facet_str << "}"
+    end
   end
 
 end

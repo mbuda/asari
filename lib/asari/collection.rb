@@ -47,6 +47,11 @@ class Asari
       else
         @data = resp["hits"]["hit"].map { |hit| hit["id"] }
       end
+      if resp["facets"]
+        @facets = resp["facets"]
+      else
+        @facets = []
+      end
     end
 
     def offset

@@ -7,7 +7,7 @@ describe "Asari" do
 
   describe "configuration" do
     it "defaults to the first CloudSearch API version." do
-      expect(@asari.api_version).to eq "2011-02-01"
+      expect(@asari.api_version).to eq "2013-01-01"
     end
 
     it "allows you to set a specific API version." do

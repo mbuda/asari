@@ -40,20 +40,20 @@ describe Asari do
       @asari.search("testsearch", :page_size => 20, :page => 3)
     end
 
-    describe "the rank option" do
-      it "takes a plain string" do
-        HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=testsearch&size=10&rank=some_field")
-        @asari.search("testsearch", :rank => "some_field")
-      end
-
+    describe "the sort option" do
       it "takes an array with :asc" do
-        HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=testsearch&size=10&rank=some_field")
-        @asari.search("testsearch", :rank => ["some_field", :asc])
+        HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=testsearch&size=10&sort=some_field asc")
+        @asari.search("testsearch", :sort => ["some_field", :asc])
       end
 
       it "takes an array with :desc" do
-        HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=testsearch&size=10&rank=-some_field")
-        @asari.search("testsearch", :rank => ["some_field", :desc])
+        HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=testsearch&size=10&sort=some_field desc")
+        @asari.search("testsearch", :sort => ["some_field", :desc] )
+      end
+
+      it "sort ascending by default" do
+        HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=testsearch&size=10&sort=some_field asc")
+        @asari.search("testsearch", :sort => ["some_field"])
       end
     end
 

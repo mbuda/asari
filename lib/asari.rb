@@ -81,10 +81,7 @@ class Asari
       url << "&start=#{start}"
     end
 
-    if options[:rank]
-      rank = normalize_rank(options[:rank])
-      url << "&rank=#{rank}"
-    end
+    url << normalize_sort(options[:sort]) if options[:sort]
 
     begin
       response = HTTParty.get(url)
@@ -214,16 +211,17 @@ class Asari
     reduce.call(terms)
   end
 
-  def normalize_rank(rank)
-    rank = Array(rank)
-    rank << :asc if rank.size < 2
-    rank[1] == :desc ? "-#{rank[0]}" : rank[0]
-  end
-
   def convert_date_or_time(obj)
     return obj unless [Time, Date, DateTime].include?(obj.class)
     obj.to_time.to_i
   end
+
+  def normalize_sort(sort_param)
+    sort_param << :asc if sort_param.size < 2
+    sort_field, sort_direction = *sort_param
+    "&sort=#{ sort_field } #{ sort_direction }"
+  end
+
 end
 
 Asari.mode = :sandbox # default to sandbox

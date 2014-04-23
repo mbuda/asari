@@ -13,6 +13,7 @@ class Asari
     attr_reader :page_size
     attr_reader :total_entries
     attr_reader :total_pages
+    attr_reader :facets
 
     # Internal: method for returning a sandbox-friendly empty search result.
     #

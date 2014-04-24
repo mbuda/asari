@@ -72,7 +72,7 @@ class Asari
 
     url = "http://search-#{search_domain}.#{aws_region}.cloudsearch.amazonaws.com/#{api_version}/search"
     url += "?q=#{CGI.escape(term.to_s)}"
-    url += "&bq=#{CGI.escape(bq)}" if options[:filter]
+    url += "&fq=#{bq}" if options[:filter]
     url << build_facets(options[:facet]) if options[:facet]
     url += "&size=#{page_size}"
     url += "&return=#{options[:return_fields].join(',')}" if options[:return_fields]
@@ -198,12 +198,26 @@ class Asari
       hash.reduce("") do |memo, (key, value)|
         if %w(and or not).include?(key.to_s) && value.is_a?(Hash)
           sub_query = reduce.call(value)
-          memo += "(#{key}#{sub_query})" unless sub_query.empty?
+          memo += "(#{key}%20#{sub_query})" unless sub_query.empty?
         else
-          if value.is_a?(Range) || value.is_a?(Integer)
-            memo += " #{key}:#{value}"
-          else
-            memo += " #{key}:'#{value}'" unless value.to_s.empty?
+          case value
+            when Integer
+              memo += "#{key}:#{ CGI.escape value }"
+            when Range
+              memo += CGI.escape("(range field=#{key} [#{value.min}, #{value.max}])")
+            when Array
+              condition = "(or%20"
+              condition << value.map do |v|
+                if v.is_a?(String)
+                  "#{ key }:'#{ CGI.escape(v.to_s) }'"
+                else
+                  "#{ key }:#{ CGI.escape(v.to_s) }"
+                end
+              end.join("%20")
+              condition << ")"
+              memo += condition
+            else
+              memo += "#{key}:'#{ CGI.escape value.to_s }'" unless value.to_s.empty?
           end
         end
         memo
@@ -235,7 +249,7 @@ class Asari
     facets.inject("") do |facet_str, facet|
       case facet
         when String, Symbol
-          facet_str << "&facet.#{ facet }={}"
+          facet_str << "&facet.#{ facet }=#{ CGI.escape("{}")}"
       end
     end
   end
@@ -244,7 +258,7 @@ class Asari
     facets.inject("") do |facet_str, facet_options|
       facet_name = facet_options[0]
       facet_value = facet_options[1]
-      facet_str << "&facet.#{ facet_name }=" << build_facet_credentials(facet_value)
+      facet_str << "&facet.#{ facet_name }=" << CGI.escape(build_facet_credentials(facet_value))
     end
   end
 

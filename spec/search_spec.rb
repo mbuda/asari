@@ -113,31 +113,31 @@ describe Asari do
 
   describe "boolean searching" do
     it "builds a query string from a passed hash" do
-      HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=&bq=%28and+foo%3A%27bar%27+baz%3A%27bug%27%29&size=10")
+      HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=&fq=(and%20foo:'bar'baz:'bug')&size=10")
       @asari.search(filter: { and: { foo: "bar", baz: "bug" }})
     end
 
     it "honors the logic types" do
-      HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=&bq=%28or+foo%3A%27bar%27+baz%3A%27bug%27%29&size=10")
+      HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=&fq=(or%20foo:'bar'baz:'bug')&size=10")
       @asari.search(filter: { or: { foo: "bar", baz: "bug" }})
     end
 
     it "supports nested logic" do
-      HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=&bq=%28or+is_donut%3A%27true%27%28and+round%3A%27true%27+frosting%3A%27true%27+fried%3A%27true%27%29%29&size=10")
+      HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=&fq=(or%20is_donut:'true'(and%20round:'true'frosting:'true'fried:'true'))&size=10")
       @asari.search(filter: { or: { is_donut: true, and:
                             { round: true, frosting: true, fried: true }}
       })
     end
 
     it "fails gracefully with empty params" do
-      HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=&bq=%28or+is_donut%3A%27true%27%29&size=10")
+      HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=&fq=(or%20is_donut:'true')&size=10")
       @asari.search(filter: { or: { is_donut: true, and:
                             { round: "", frosting: nil, fried: nil }}
       })
     end
 
     it "supports full text search and boolean searching" do
-      HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=nom&bq=%28or+is_donut%3A%27true%27%28and+fried%3A%27true%27%29%29&size=10")
+      HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=nom&fq=(or%20is_donut:'true'(and%20fried:'true'))&size=10")
       @asari.search("nom", filter: { or: { is_donut: true, and:
                                    { round: "", frosting: nil, fried: true }}
       })
@@ -146,29 +146,30 @@ describe Asari do
 
   describe "geography searching" do
     it "builds a proper query string" do
-      HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=&bq=%28and+lat%3A2505771415..2506771417+lng%3A2358260777..2359261578%29&size=10")
-      @asari.search filter: { and: Asari::Geography.coordinate_box(meters: 5000, lat: 45.52, lng: 122.6819) }
+      box = Asari::Geography.coordinate_box(meters: 5000, lat: 45.52, lng: 122.6819)
+      HTTParty.should_receive(:get).with("http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/search?q=&fq=(and%20%28range+field%3Dlat+%5B2505771415%2C+2506771417%5D%29%28range+field%3Dlng+%5B2358260777%2C+2359261578%5D%29)&size=10")
+      @asari.search filter: { and: box }
     end
   end
 
   describe "searching with facets" do
     it "builds a proper query string if one facet in array is passed" do
       expected_url = "http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/" +
-        "search?q=&facet.genres={}&size=10"
+        "search?q=&facet.genres=%7B%7D&size=10"
       HTTParty.should_receive(:get).with(expected_url)
       @asari.search(facet: [:genres])
     end
 
     it "builds a proper query string if many facets in array is passed" do
       expected_url = "http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/" +
-        "search?q=&facet.genres={}&facet.year={}&size=10"
+        "search?q=&facet.genres=%7B%7D&facet.year=%7B%7D&size=10"
       HTTParty.should_receive(:get).with(expected_url)
       @asari.search(facet: [:genres, :year])
     end
 
     it "builds a proper query string if one facet with options is passed" do
       expected_url = "http://search-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/" +
-        "search?q=&facet.genres={sort:'count',size:5}&size=10"
+        "search?q=&facet.genres=%7Bsort%3A%27count%27%2Csize%3A5%7D&size=10"
       HTTParty.should_receive(:get).with(expected_url)
       @asari.search(facet: { genres: { sort: "count", size: 5 } })
     end

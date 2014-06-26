@@ -77,6 +77,9 @@ class Asari
     url += "&size=#{page_size}"
     url += "&return=#{options[:return_fields].join(',')}" if options[:return_fields]
 
+    # Handle query options
+    url << "&q.options=#{CGI.escape options[:options].to_json}" if options[:options]
+
     if options[:page]
       start = (options[:page].to_i - 1) * page_size
       url << "&start=#{start}"

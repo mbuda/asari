@@ -1,6 +1,12 @@
 require_relative "../spec_helper"
 
 describe Asari do
+  let(:credentials) { { secret_access_key: "secret_access_key", access_key_id: "key_id" } }
+
+  before do
+    AWS.stub_chain(:config, :credential_provider, :credentials).and_return(credentials)
+  end
+
   describe "updating the index" do
     before :each do
       @asari = Asari.new("testdomain")
@@ -12,7 +18,9 @@ describe Asari do
     context "when region is not specified" do
       it "allows you to add an item to the index using default region." do
         HTTParty.should_receive(:post).with("http://doc-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/documents/batch",
-          { :body => [{ "type" => "add", "id" => "1", "fields" => { :name => "fritters"}}].to_json, :headers => { "Content-Type" => "application/json"}})
+          { :body => [{ "type" => "add", "id" => "1", "fields" => { :name => "fritters"}}].to_json,
+            :headers => { "Content-Type" => "application/json", "Authorization" => instance_of(String),
+          "X-Amz-Date" => instance_of(String)}})
 
         expect(@asari.add_item("1", {:name => "fritters"})).to eq(nil)
       end
@@ -24,7 +32,9 @@ describe Asari do
       end
       it "allows you to add an item to the index using specified region." do
         HTTParty.should_receive(:post).with("http://doc-testdomain.my-region.cloudsearch.amazonaws.com/2013-01-01/documents/batch",
-          { :body => [{ "type" => "add", "id" => "1", "fields" => { :name => "fritters"}}].to_json, :headers => { "Content-Type" => "application/json"}})
+          { :body => [{ "type" => "add", "id" => "1", "fields" => { :name => "fritters"}}].to_json,
+            :headers => { "Content-Type" => "application/json", "Authorization" => instance_of(String),
+              "X-Amz-Date" => instance_of(String) }})
 
         expect(@asari.add_item("1", {:name => "fritters"})).to eq(nil)
       end
@@ -33,14 +43,18 @@ describe Asari do
     it "converts Time, DateTime, and Date fields to timestamp integers for rankability" do
       date = Date.new(2012, 4, 1)
       HTTParty.should_receive(:post).with("http://doc-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/documents/batch",
-        { :body => [{ "type" => "add", "id" => "1", "fields" => { :time => 1333263600, :datetime => 1333238400, :date => date.to_time.to_i }}].to_json, :headers => { "Content-Type" => "application/json"}})
+        { :body => [{ "type" => "add", "id" => "1", "fields" => { :time => 1333263600, :datetime => 1333238400, :date => date.to_time.to_i }}].to_json,
+          :headers => { "Content-Type" => "application/json", "Authorization" => instance_of(String),
+            "X-Amz-Date" => instance_of(String) }})
 
       expect(@asari.add_item("1", {:time => Time.at(1333263600), :datetime => DateTime.new(2012, 4, 1), :date => date})).to eq(nil)
     end
 
     it "allows you to update an item to the index." do
       HTTParty.should_receive(:post).with("http://doc-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/documents/batch",
-        { :body => [{ "type" => "add", "id" => "1", "fields" => { :name => "fritters"}}].to_json, :headers => { "Content-Type" => "application/json"}})
+        { :body => [{ "type" => "add", "id" => "1", "fields" => { :name => "fritters"}}].to_json,
+          :headers => { "Content-Type" => "application/json", "Authorization" => instance_of(String),
+            "X-Amz-Date" => instance_of(String) }})
 
       expect(@asari.update_item("1", {:name => "fritters"})).to eq(nil)
     end
@@ -48,14 +62,18 @@ describe Asari do
     it "converts Time, DateTime, and Date fields to timestamp integers for rankability on update as well" do
       date = Date.new(2012, 4, 1)
       HTTParty.should_receive(:post).with("http://doc-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/documents/batch",
-        { :body => [{ "type" => "add", "id" => "1", "fields" => { :time => 1333263600, :datetime => 1333238400, :date => date.to_time.to_i }}].to_json, :headers => { "Content-Type" => "application/json"}})
+        { :body => [{ "type" => "add", "id" => "1", "fields" => { :time => 1333263600, :datetime => 1333238400, :date => date.to_time.to_i }}].to_json,
+          :headers => { "Content-Type" => "application/json", "Authorization" => instance_of(String),
+            "X-Amz-Date" => instance_of(String) }})
 
       expect(@asari.update_item("1", {:time => Time.at(1333263600), :datetime => DateTime.new(2012, 4, 1), :date => date})).to eq(nil)
     end
 
     it "allows you to delete an item from the index." do
       HTTParty.should_receive(:post).with("http://doc-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/documents/batch",
-        { :body => [{ "type" => "delete", "id" => "1" }].to_json, :headers => { "Content-Type" => "application/json"}})
+        { :body => [{ "type" => "delete", "id" => "1" }].to_json,
+          :headers => { "Content-Type" => "application/json", "Authorization" => instance_of(String),
+            "X-Amz-Date" => instance_of(String) }})
 
       expect(@asari.remove_item("1")).to eq(nil)
     end

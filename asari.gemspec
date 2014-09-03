@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
   # s.add_runtime_dependency "rest-client"
 
   s.add_runtime_dependency "httparty"
+  s.add_runtime_dependency "aws-sdk"
 
   s.add_development_dependency "rspec"
   s.add_development_dependency "simplecov"

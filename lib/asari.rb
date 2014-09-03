@@ -3,6 +3,7 @@ require "asari/version"
 require "asari/collection"
 require "asari/exceptions"
 require "asari/geography"
+require "asari/request_signature"
 
 require "httparty"
 
@@ -88,7 +89,8 @@ class Asari
     url << normalize_sort(options[:sort]) if options[:sort]
 
     begin
-      response = HTTParty.get(url)
+      signature = Asari::RequestSignature.new("GET", url)
+      response = HTTParty.get(url, { headers: signature.signature_headers })
     rescue Exception => e
       ae = Asari::SearchException.new("#{e.class}: #{e.message} (#{url})")
       ae.set_backtrace e.backtrace
@@ -176,6 +178,8 @@ class Asari
     options = { :body => [query].to_json, :headers => { "Content-Type" => "application/json"} }
 
     begin
+      signature = Asari::RequestSignature.new("POST", endpoint, options[:body])
+      options[:headers].merge!(signature.signature_headers)
       response = HTTParty.post(endpoint, options)
     rescue Exception => e
       ae = Asari::DocumentUpdateException.new("#{e.class}: #{e.message}")
@@ -237,7 +241,7 @@ class Asari
   def normalize_sort(sort_param)
     sort_param << :asc if sort_param.size < 2
     sort_field, sort_direction = *sort_param
-    "&sort=#{ sort_field } #{ sort_direction }"
+    URI.escape "&sort=#{ sort_field } #{ sort_direction }"
   end
 
 

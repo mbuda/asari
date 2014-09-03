@@ -241,7 +241,7 @@ class Asari
   def normalize_sort(sort_param)
     sort_param << :asc if sort_param.size < 2
     sort_field, sort_direction = *sort_param
-    URI.escape "&sort=#{ sort_field } #{ sort_direction }".strip
+    "&sort=#{ sort_field } #{ sort_direction }".strip
   end
 
 

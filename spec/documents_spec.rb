@@ -2,9 +2,13 @@ require_relative "../spec_helper"
 
 describe Asari do
   let(:credentials) { { secret_access_key: "secret_access_key", access_key_id: "key_id" } }
+  let(:session_token) do
+    "AQoDYXdzEIr//////////wEa0ANsjnI2oPiS9IxXRsuV61WNhxbW1hPNh3/0e0k+o0szVxB9zCUW6sBOsE4wjTvgLcxwcaI8W3Llqey/BRGpAgWCYRn/xvSvrIsy4aamOKuJa2Ay/AmQZIDRzllSWC/sfq+NRSfqLguvAkymUMQ9XUoJ4KknjFjrPj0ImxYPc30epoKdLRLfn6JLAB5kboLBQZwWmQpNwA7wKkFqvTUgxOaensRQ56OroMKbIC1LjbsZpS2P5S0Ch2OzuP/oGZe5Kpoq0388SOHF9RLBPu1UQVqnDaMY/t7nq+NUH/f84OXR7NYWbophYRT9u4ZfPaE/C6VKVhAwN2aerI266hyWPRDpA1vXduF/dVPIQG5rtoE0Ryuf+ZnmLhbD54bQInaBb699j0/rGVed3NLGNPvWIOc8WDD4GNPlcJmj3EoS5c79TwQQUGd+AWdF7WW9Bikvd41ghP6sJBpm471K9pyvIJ7k2kxtBWDP/dz3r"
+  end
 
   before do
     AWS.stub_chain(:config, :credential_provider, :credentials).and_return(credentials)
+    AWS.stub_chain(:config, :credential_provider, :session_token).and_return(session_token)
   end
 
   describe "updating the index" do
@@ -20,7 +24,7 @@ describe Asari do
         HTTParty.should_receive(:post).with("http://doc-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/documents/batch",
           { :body => [{ "type" => "add", "id" => "1", "fields" => { :name => "fritters"}}].to_json,
             :headers => { "Content-Type" => "application/json", "Authorization" => instance_of(String),
-          "X-Amz-Date" => instance_of(String)}})
+          "X-Amz-Date" => instance_of(String), "X-Amz-Security-Token" => instance_of(String)}})
 
         expect(@asari.add_item("1", {:name => "fritters"})).to eq(nil)
       end
@@ -34,7 +38,7 @@ describe Asari do
         HTTParty.should_receive(:post).with("http://doc-testdomain.my-region.cloudsearch.amazonaws.com/2013-01-01/documents/batch",
           { :body => [{ "type" => "add", "id" => "1", "fields" => { :name => "fritters"}}].to_json,
             :headers => { "Content-Type" => "application/json", "Authorization" => instance_of(String),
-              "X-Amz-Date" => instance_of(String) }})
+              "X-Amz-Date" => instance_of(String), "X-Amz-Security-Token" => instance_of(String) }})
 
         expect(@asari.add_item("1", {:name => "fritters"})).to eq(nil)
       end
@@ -45,7 +49,7 @@ describe Asari do
       HTTParty.should_receive(:post).with("http://doc-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/documents/batch",
         { :body => [{ "type" => "add", "id" => "1", "fields" => { :time => 1333263600, :datetime => 1333238400, :date => date.to_time.to_i }}].to_json,
           :headers => { "Content-Type" => "application/json", "Authorization" => instance_of(String),
-            "X-Amz-Date" => instance_of(String) }})
+            "X-Amz-Date" => instance_of(String), "X-Amz-Security-Token" => instance_of(String) }})
 
       expect(@asari.add_item("1", {:time => Time.at(1333263600), :datetime => DateTime.new(2012, 4, 1), :date => date})).to eq(nil)
     end
@@ -54,7 +58,7 @@ describe Asari do
       HTTParty.should_receive(:post).with("http://doc-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/documents/batch",
         { :body => [{ "type" => "add", "id" => "1", "fields" => { :name => "fritters"}}].to_json,
           :headers => { "Content-Type" => "application/json", "Authorization" => instance_of(String),
-            "X-Amz-Date" => instance_of(String) }})
+            "X-Amz-Date" => instance_of(String), "X-Amz-Security-Token" => instance_of(String) }})
 
       expect(@asari.update_item("1", {:name => "fritters"})).to eq(nil)
     end
@@ -64,7 +68,7 @@ describe Asari do
       HTTParty.should_receive(:post).with("http://doc-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/documents/batch",
         { :body => [{ "type" => "add", "id" => "1", "fields" => { :time => 1333263600, :datetime => 1333238400, :date => date.to_time.to_i }}].to_json,
           :headers => { "Content-Type" => "application/json", "Authorization" => instance_of(String),
-            "X-Amz-Date" => instance_of(String) }})
+            "X-Amz-Date" => instance_of(String), "X-Amz-Security-Token" => instance_of(String) }})
 
       expect(@asari.update_item("1", {:time => Time.at(1333263600), :datetime => DateTime.new(2012, 4, 1), :date => date})).to eq(nil)
     end
@@ -73,7 +77,7 @@ describe Asari do
       HTTParty.should_receive(:post).with("http://doc-testdomain.us-east-1.cloudsearch.amazonaws.com/2013-01-01/documents/batch",
         { :body => [{ "type" => "delete", "id" => "1" }].to_json,
           :headers => { "Content-Type" => "application/json", "Authorization" => instance_of(String),
-            "X-Amz-Date" => instance_of(String) }})
+            "X-Amz-Date" => instance_of(String), "X-Amz-Security-Token" => instance_of(String) }})
 
       expect(@asari.remove_item("1")).to eq(nil)
     end

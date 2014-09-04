@@ -8,6 +8,7 @@ class Asari
 
     AUTHORIZATION_HEADER_NAME = "Authorization"
     DATE_HEADER_NAME = "X-Amz-Date"
+    SECURITY_TOKEN_NAME = "X-Amz-Security-Token"
 
     def initialize(method, url, body = "")
       @method = method
@@ -16,6 +17,7 @@ class Asari
       @now = Time.now.utc
       @access_key_id = AWS.config.credential_provider.credentials[:access_key_id]
       @access_key = AWS.config.credential_provider.credentials[:secret_access_key]
+      @security_token = AWS.config.credential_provider.session_token
     end
 
     def signature
@@ -31,7 +33,7 @@ class Asari
       {
         AUTHORIZATION_HEADER_NAME => header_value,
         DATE_HEADER_NAME => @now.strftime("%Y%m%dT%H%M%SZ")
-      }
+      }.merge(security_token)
     end
 
     private
@@ -70,6 +72,14 @@ class Asari
         credential_scope,
         Digest::SHA256.hexdigest(canonical_request)
       ].join("\n")
+    end
+
+    def security_token
+      if @security_token && !@security_token.empty?
+        { SECURITY_TOKEN_NAME => @security_token }
+      else
+        {}
+      end
     end
 
   end

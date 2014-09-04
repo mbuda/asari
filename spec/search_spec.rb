@@ -2,12 +2,16 @@ require_relative "../spec_helper"
 
 describe Asari do
   let(:credentials) { { secret_access_key: "secret_access_key", access_key_id: "key_id" } }
+  let(:session_token) do
+    "AQoDYXdzEIr//////////wEa0ANsjnI2oPiS9IxXRsuV61WNhxbW1hPNh3/0e0k+o0szVxB9zCUW6sBOsE4wjTvgLcxwcaI8W3Llqey/BRGpAgWCYRn/xvSvrIsy4aamOKuJa2Ay/AmQZIDRzllSWC/sfq+NRSfqLguvAkymUMQ9XUoJ4KknjFjrPj0ImxYPc30epoKdLRLfn6JLAB5kboLBQZwWmQpNwA7wKkFqvTUgxOaensRQ56OroMKbIC1LjbsZpS2P5S0Ch2OzuP/oGZe5Kpoq0388SOHF9RLBPu1UQVqnDaMY/t7nq+NUH/f84OXR7NYWbophYRT9u4ZfPaE/C6VKVhAwN2aerI266hyWPRDpA1vXduF/dVPIQG5rtoE0Ryuf+ZnmLhbD54bQInaBb699j0/rGVed3NLGNPvWIOc8WDD4GNPlcJmj3EoS5c79TwQQUGd+AWdF7WW9Bikvd41ghP6sJBpm471K9pyvIJ7k2kxtBWDP/dz3r"
+  end
 
   before :each do
     @asari = Asari.new("testdomain")
     stub_const("HTTParty", double())
     HTTParty.stub(:get).and_return(fake_response)
     AWS.stub_chain(:config, :credential_provider, :credentials).and_return(credentials)
+    AWS.stub_chain(:config, :credential_provider, :session_token).and_return(session_token)
   end
 
   describe "searching" do

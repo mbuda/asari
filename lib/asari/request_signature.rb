@@ -54,7 +54,8 @@ class Asari
 
       # There are some differences between escaped query params in AWS service and in URI module
       # from Ruby library.
-      URI.escape(URI.unescape(sorted)).gsub("(","%28").gsub(')','%29').gsub('[','%5B').gsub(']','%5D').gsub(':','%3A').gsub("'",'%27').gsub(',','%2C')
+      URI.escape(URI.unescape(sorted)).gsub("(","%28").gsub(')','%29').gsub('[','%5B').gsub(']','%5D')
+        .gsub(':','%3A').gsub("'",'%27').gsub(',','%2C').gsub('*','%2A').gsub('+','%20')
     end
 
     def credential_scope

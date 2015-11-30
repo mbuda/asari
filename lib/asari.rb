@@ -88,6 +88,7 @@ class Asari
 
     url << normalize_sort(options[:sort]) if options[:sort]
 
+    puts "\n\nURL sort:\n\n#{url}"
     begin
       signature = Asari::RequestSignature.new("GET", url)
       response = HTTParty.get(url, { headers: signature.signature_headers })
@@ -177,9 +178,11 @@ class Asari
 
     options = { :body => [query].to_json, :headers => { "Content-Type" => "application/json"} }
 
+    puts "\n\n Endpoint:\n#{endpoint}"
     begin
       signature = Asari::RequestSignature.new("POST", endpoint, options[:body])
       options[:headers].merge!(signature.signature_headers)
+      puts "\n\nOptions:\n#{options.inspect}"
       response = HTTParty.post(endpoint, options)
     rescue Exception => e
       ae = Asari::DocumentUpdateException.new("#{e.class}: #{e.message}")
